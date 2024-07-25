@@ -7,7 +7,9 @@
     "build:js": "esbuild --bundle --minify --target=es6 --outfile=src/inject.min.js src/index.ts",
     "tauri": "tauri",
     "dev": "tauri dev",
-    "build": "tauri build"
+    "build": "tauri build",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint --fix ./src"
   },
   "dependencies": {
     "@tauri-apps/api": ">=2.0.0-beta.0",
@@ -16,6 +18,8 @@
   "devDependencies": {
     "@tauri-apps/cli": ">=2.0.0-beta.0",
     "esbuild": "^0.23.0",
-    "typescript": "^5.2.2"
+    "eslint": "^8.57.0",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^7.8.0"
   }
 }

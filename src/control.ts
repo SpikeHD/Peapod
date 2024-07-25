@@ -1,5 +1,5 @@
 export async function appendTopbar() {
-  const { invoke } = window.__TAURI__.core;
+  const { invoke } = window.__TAURI__.core
   const topbar = await invoke('get_topbar')
 
   // Append directly to the top of the body
@@ -7,23 +7,23 @@ export async function appendTopbar() {
 }
 
 export function addTopbarEvents() {
-  const { invoke } = window.__TAURI__.core;
-  const close = document.querySelector('#topclose');
-  const minimize = document.querySelector('#topmin');
-  const maximize = document.querySelector('#topmax');
+  const { invoke } = window.__TAURI__.core
+  const close = document.querySelector('#topclose')
+  const minimize = document.querySelector('#topmin')
+  const maximize = document.querySelector('#topmax')
 
   close?.addEventListener('click', () => {
-    invoke('close');
-  });
+    invoke('close')
+  })
 
   minimize?.addEventListener('click', () => {
-    invoke('minimize');
-  });
+    invoke('minimize')
+  })
 
   maximize?.addEventListener('click', () => {
-    invoke('toggle_maximize');
+    invoke('toggle_maximize')
     setMaximizeIcon()
-  });
+  })
 }
 
 export async function appendVersion() {

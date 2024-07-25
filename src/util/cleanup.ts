@@ -1,6 +1,6 @@
 export function removeBanner() {
-  const e = document.getElementById("cap");
+  const e = document.getElementById('cap')
   if (e) {
-    e.style.display = "none";
+    e.style.display = 'none'
   }
 }

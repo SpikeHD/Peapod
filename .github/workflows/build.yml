@@ -1,0 +1,301 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build.yml'
+      - 'package.json'
+      - 'src-tauri/**/*'
+      - 'src/**/*'
+  pull_request:
+    paths:
+      - '.github/workflows/build.yml'
+      - 'package.json'
+      - 'src-tauri/**/*'
+      - 'src/**/*'
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  build:
+    runs-on: ${{ matrix.config.platform }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - platform: ubuntu-latest
+            target: 'x86_64-unknown-linux-gnu'
+          - platform: ubuntu-latest
+            target: 'aarch64-unknown-linux-gnu'
+          - platform: ubuntu-latest
+            target: 'armv7-unknown-linux-gnueabihf'
+
+          - platform: macos-latest
+            target: 'x86_64-apple-darwin'
+          - platform: macos-latest
+            target: 'aarch64-apple-darwin'
+
+          - platform: windows-latest
+            target: 'x86_64-pc-windows-msvc'
+          - platform: windows-latest
+            target: 'aarch64-pc-windows-msvc'
+
+    steps:
+      - uses: actions-rust-lang/setup-rust-toolchain@v1.8
+      - uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-${{ matrix.config.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: (Linux) ARM sources.list
+        if: matrix.config.target == 'aarch64-unknown-linux-gnu' || matrix.config.target == 'armv7-unknown-linux-gnueabihf'
+        run: |
+          # Add [arch=amd64] to the initial entries of the sources.list
+          sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
+
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security multiverse" | sudo tee -a /etc/apt/sources.list
+
+      # ARM-linux related sources and dpkg config and such
+      - name: (Linux) ARM setup
+        if: matrix.config.target == 'aarch64-unknown-linux-gnu' || matrix.config.target == 'armv7-unknown-linux-gnueabihf'
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo dpkg --add-architecture armhf
+          sudo apt-get update
+
+      - name: (Linux) Install dependencies
+        if: matrix.config.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev \
+            libsoup-3.0-dev \
+            build-essential \
+            curl \
+            wget \
+            libssl-dev \
+            libgtk-3-dev \
+            librsvg2-dev
+
+      - name: (Linux) (ARMv7) Install dependencies
+        if: matrix.config.target == 'armv7-unknown-linux-gnueabihf'
+        run: |
+          sudo apt-get install -y \
+            libc6:armhf \
+            libwebkit2gtk-4.1-dev:armhf \
+            libssl-dev:armhf \
+            libsoup-3.0-dev:armhf \
+            gcc-arm-linux-gnueabihf
+
+      - name: (Linux) (ARM64) Install dependencies
+        if: matrix.config.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get install -y \
+            libc6:arm64 \
+            libwebkit2gtk-4.1-dev:arm64 \
+            libssl-dev:arm64 \
+            libsoup-3.0-dev:arm64 \
+            gcc-aarch64-linux-gnu
+
+      - name: Add target
+        run: rustup target add ${{ matrix.config.target }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build injected JS
+        run: pnpm build:js
+  
+      - name: (Most) Build
+        # If we are compiling for Windows ARM, we can only support NSIS
+        run: pnpm tauri build --target ${{ matrix.config.target }} ${{ matrix.config.target == 'aarch64-pc-windows-msvc' && '--bundles nsis' || '' }} ${{ matrix.config.target == 'x86_64-unknown-linux-gnu' && '--bundles deb' || '' }}
+        if: matrix.config.target != 'aarch64-unknown-linux-gnu' && matrix.config.target != 'armv7-unknown-linux-gnueabihf'
+        env:
+          RUSTFLAGS: -Awarnings
+          CC: clang
+
+      - name: (Linux) (ARMv7) Build
+        if: matrix.config.target == 'armv7-unknown-linux-gnueabihf'
+        run: pnpm tauri build --target ${{ matrix.config.target }}}} --bundles deb
+        env:
+          RUSTFLAGS: -Awarnings -L/usr/lib/arm-linux-gnueabihf
+          CC: arm-linux-gnueabihf-gcc
+          PKG_CONFIG_SYSROOT_DIR: /usr/lib/arm-linux-gnueabihf
+          PKG_CONFIG_PATH: /usr/lib/arm-linux-gnueabihf/pkgconfig
+
+      - name: (Linux) (ARM64) Build
+        if: matrix.config.target == 'aarch64-unknown-linux-gnu'
+        run: pnpm tauri build --target ${{ matrix.config.target }}}} --bundles deb
+        env:
+          RUSTFLAGS: -Awarnings -L/usr/lib/aarch64-linux-gnu
+          CC: aarch64-linux-gnu-gcc
+          PKG_CONFIG_SYSROOT_DIR: /usr/lib/aarch64-linux-gnu
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+
+      # For portable installs
+      - name: Create empty config.json
+        run: cd src-tauri/target/${{ matrix.config.target }}/release && echo {} > config.json
+        
+      # paths:
+      # Windows:
+      # - src-tauri/target/${{ matrix.config.target }}/release/peapod.exe
+      # Ubuntu:
+      # - src-tauri/target/${{ matrix.config.target }}/release/peapod
+      # MacOS:
+      # - src-tauri/target/${{ matrix.config.target }}/release/bundle/macos/peapod.app
+      - name: (Windows) Compress build
+        if: matrix.config.platform == 'windows-latest'
+        run: cd src-tauri/target/${{ matrix.config.target }}/release && 7z a -tzip -mx9 peapod.zip 
+          peapod.exe
+          config.json
+
+      - name: (Linux) Compress build
+        if: matrix.config.platform == 'ubuntu-latest'
+        run: cd src-tauri/target/${{ matrix.config.target }}/release && tar -czvf peapod.tar.gz peapod config.json
+
+      # Windows portable
+      - name: (Windows) Upload portable
+        if: matrix.config.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_portable
+          path: src-tauri/target/${{ matrix.config.target }}/release/peapod.zip
+
+      # Windows MSI
+      - name: (Windows) Upload .msi
+        if: matrix.config.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_msi
+          path: src-tauri/target/${{ matrix.config.target }}/release/bundle/msi/*.msi
+
+      # Windows ARM only supports NSIS right now, but we should upload that too
+      - name: (Windows) Upload NSIS
+        if: matrix.config.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_nsis
+          path: src-tauri/target/${{ matrix.config.target }}/release/bundle/nsis/*.exe
+
+      # Ubuntu portable
+      - name: (Linux) Upload portable
+        if: matrix.config.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_portable
+          path: src-tauri/target/${{ matrix.config.target }}/release/peapod.tar.gz
+
+      # Ubuntu deb
+      - name: (Linux) Upload .deb
+        if: matrix.config.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_deb
+          path: src-tauri/target/${{ matrix.config.target }}/release/bundle/deb/*.deb
+
+      # Redhat rpm
+      # - name: (Linux) Upload .rpm
+      #   if: matrix.config.platform == 'ubuntu-latest'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: peapod_${{ matrix.config.target }}_rpm
+      #     path: src-tauri/target/${{ matrix.config.target }}/release/bundle/rpm/*.rpm
+
+      - name: (Linux) Upload .appimage
+        if: matrix.config.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_appimage
+          path: src-tauri/target/${{ matrix.config.target }}/release/bundle/appimage/*.AppImage
+
+      - name: (MacOS) Upload .dmg
+        if: matrix.config.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: peapod_${{ matrix.config.target }}_dmg
+          path: src-tauri/target/${{ matrix.config.target }}/release/bundle/dmg/*.dmg
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Download all artifacts from the build job
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename executables to their folder names
+        run: |
+          # get the folder name
+          folder_name=artifacts
+
+          # get the list of inner folders
+          folders=$(ls $folder_name)
+
+          # loop through the files in each folder
+          for folder in $folders; do
+            # Get the list of files in the folder
+            files=$(ls "$folder_name/$folder")
+          
+            for file in $files; do
+              # Get the filename without extension
+              filename="${file%.*}"
+          
+              # Get the extension (everything after the last dot)
+              extension="${file##*.}"
+          
+              # Build the new filename with parent folder name and extension
+              new_filename="$folder_name/$folder/$folder.$extension"
+          
+              # Rename the file
+              mv "$folder_name/$folder/$file" "$new_filename"
+            done
+          done
+
+      - name: Create release using all artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Release name is the tag name
+          name: ${{ github.ref_name }}
+          draft: false
+          generate_release_notes: true
+          prerelease: false

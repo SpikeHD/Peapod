@@ -1,7 +1,7 @@
 {
   "productName": "peapod",
   "version": "0.0.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.spikehd.peapod",
   "build": {
     "beforeDevCommand": "pnpm build:js",
     "devUrl": "https://www.photopea.com",
