@@ -1,5 +1,5 @@
 <h1 align="center">
- <img height="100px" src="https://raw.githubusercontent.com/SpikeHD/peapod/main/src-tauri/icons/icon.png" />
+ <img height="100px" src="src-tauri/icons/icon.png" />
  <br />
  Peapod
 </h1>
