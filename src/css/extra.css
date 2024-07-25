@@ -1,0 +1,9 @@
+body {
+  overflow: hidden
+}
+
+/* Different than the actual body, lol */
+.body {
+  height: calc(100vh - 24px * 2) !important;
+  width: 100vw !important;
+}

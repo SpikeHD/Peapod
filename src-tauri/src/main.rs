@@ -8,6 +8,7 @@ use tauri::{WebviewUrl, WebviewWindowBuilder};
 use utils::paths::get_webdata_dir;
 
 mod utils;
+mod window;
 
 // Injected JS
 flate!(pub static INJECTION: str from "../src/inject.min.js");
@@ -19,7 +20,15 @@ fn main() {
 
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
-    .invoke_handler(tauri::generate_handler![])
+    .invoke_handler(tauri::generate_handler![
+      window::events::close,
+      window::events::minimize,
+      window::events::maximize,
+      window::events::unmaximize,
+      window::events::disable_decorations,
+      window::html::get_topbar,
+      window::html::get_extra_css
+    ])
     .on_window_event(|_window, event| match event {
       tauri::WindowEvent::Resized { .. } => {
         // Sleep for a millisecond (blocks the thread but it doesn't really matter)
