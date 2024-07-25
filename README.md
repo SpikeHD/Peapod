@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
- Desktop client for <a href="https://www.photopea.com/">Photopea,</a> made for Windows, Linux and MacOS.
+ Desktop client for <a href="https://www.photopea.com/">Photopea</a>, made for Windows, Linux and MacOS.
  <br />
  https://discord.gg/agQ9mRdHMZ
 </div>

@@ -14,11 +14,15 @@ mod window;
 flate!(pub static INJECTION: str from "../src/inject.min.js");
 
 fn main() {
+  utils::log::init(true);
+  log!("Initializing...");
+
   let context = tauri::generate_context!("tauri.conf.json");
   let parsed_url = reqwest::Url::parse(&"https://www.photopea.com".to_string()).unwrap();
   let url_ext = WebviewUrl::External(parsed_url);
 
   if utils::args::is_gpu_disabled() {
+    log!("Disabling hardware acceleration...");
     #[cfg(target_os = "windows")]
     utils::platform::disable_hardware_accel_windows();
   }
@@ -43,6 +47,8 @@ fn main() {
       _ => {}
     })
     .setup(move |app: &mut tauri::App| {
+      log!("Starting Peapod v{}...", app.package_info().version);
+
       // First, grab preload plugins
       let title = format!("Peapod - v{}", app.package_info().version);
       let win = WebviewWindowBuilder::new(app, "main", url_ext)
