@@ -107,11 +107,11 @@
 
 ## TODO
 
-* Offline mode
-* Custom theme support
-  * In-UI theme switcher (Maybe possible to insert into `More > Themes`?)
-* Plugin support
-  * In-UI plugin manager
+* [ ] Offline mode
+* [ ] Custom theme support
+  * [ ] In-UI theme switcher (Maybe possible to insert into `More > Themes`?)
+* [ ] Plugin support
+  * [ ] In-UI plugin manager
 
 ## Contributing
 
