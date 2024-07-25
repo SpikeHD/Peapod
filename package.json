@@ -1,7 +1,7 @@
 {
   "name": "peapod",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "build:js": "esbuild --bundle --minify --target=es6 --outfile=src/inject.min.js src/index.ts",
