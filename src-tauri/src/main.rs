@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::time::Duration;
+
 use include_flate::flate;
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 use utils::paths::get_webdata_dir;
@@ -18,6 +20,14 @@ fn main() {
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
     .invoke_handler(tauri::generate_handler![])
+    .on_window_event(|_window, event| match event {
+      tauri::WindowEvent::Resized { .. } => {
+        // Sleep for a millisecond (blocks the thread but it doesn't really matter)
+        // https://github.com/tauri-apps/tauri/issues/6322#issuecomment-1448141495
+        std::thread::sleep(Duration::from_millis(1));
+      }
+      _ => {}
+    })
     .setup(move |app: &mut tauri::App| {
       // First, grab preload plugins
       let title = format!("Peapod - v{}", app.package_info().version);
