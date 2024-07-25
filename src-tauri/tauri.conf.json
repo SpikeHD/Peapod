@@ -3,20 +3,14 @@
   "version": "0.0.0",
   "identifier": "com.tauri.dev",
   "build": {
-    "beforeDevCommand": "",
+    "beforeDevCommand": "pnpm build:js",
     "devUrl": "https://www.photopea.com",
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "pnpm build:js",
     "frontendDist": "https://www.photopea.com"
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [
-      {
-        "title": "peapod",
-        "width": 1280,
-        "height": 720
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
