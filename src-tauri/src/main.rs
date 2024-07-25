@@ -18,6 +18,11 @@ fn main() {
   let parsed_url = reqwest::Url::parse(&"https://www.photopea.com".to_string()).unwrap();
   let url_ext = WebviewUrl::External(parsed_url);
 
+  if utils::args::is_gpu_disabled() {
+    #[cfg(target_os = "windows")]
+    utils::platform::disable_hardware_accel_windows();
+  }
+
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
     .invoke_handler(tauri::generate_handler![
@@ -55,6 +60,11 @@ fn main() {
 
       win.show()?;
       win.maximize()?;
+
+      if utils::args::is_gpu_disabled() {
+        #[cfg(target_os = "linux")]
+        utils::platform::disable_hardware_accel_linux(&win);
+      }
 
       Ok(())
     })
