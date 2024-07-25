@@ -39,25 +39,25 @@
   <tr>
     <td width="30%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-pc-windows-msvc_msi">x86_64</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-pc-windows-msvc_msi.msi">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_aarch64-pc-windows-msvc_nsis">ARM</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_aarch64-pc-windows-msvc_nsis.exe">ARM</a>
       </div>
     </td>
     <td width="30%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-apple-darwin_dmg">x86_64</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-apple-darwin_dmg.dmg">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_aarch64-apple-darwin_dmg">ARM</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_aarch64-apple-darwin_dmg.dmg">ARM</a>
       </div>
     </td>
     <td width="30%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-unknown-linux-gnu_deb">x86_64</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_x86_64-unknown-linux-gnu_deb.deb">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/">ARM v7</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_armv7-unknown-linux-gnueabihf_deb.deb">ARM v7</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/">ARM64</a>
+        <a href="https://github.com/SpikeHD/peapod/releases/latest/download/peapod_aarch64-unknown-linux-gnu_deb.deb">ARM64</a>
       </div>
     </td>
   </tr>
