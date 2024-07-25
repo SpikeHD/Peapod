@@ -9,13 +9,12 @@ pub fn minimize(win: tauri::WebviewWindow) {
 }
 
 #[tauri::command]
-pub fn maximize(win: tauri::WebviewWindow) {
-  win.maximize().unwrap();
-}
-
-#[tauri::command]
-pub fn unmaximize(win: tauri::WebviewWindow) {
-  win.unmaximize().unwrap();
+pub fn toggle_maximize(win: tauri::WebviewWindow) {
+  if win.is_maximized().unwrap_or_default() {
+    win.unmaximize().unwrap_or_default();
+  } else {
+    win.maximize().unwrap_or_default();
+  }
 }
 
 #[tauri::command]

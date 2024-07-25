@@ -3,7 +3,12 @@ body {
 }
 
 /* Different than the actual body, lol */
-.body {
+/* .body {
   height: calc(100vh - 24px * 2) !important;
   width: 100vw !important;
-}
+} */
+
+/* The next dive is the top bar, which we need to expand */
+/* .cmanager + div {
+  width: 100vw !important;
+} */

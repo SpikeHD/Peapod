@@ -21,7 +21,8 @@ export function addTopbarEvents() {
   });
 
   maximize?.addEventListener('click', () => {
-    invoke('maximize');
+    invoke('toggle_maximize');
+    setMaximizeIcon()
   });
 }
 
@@ -33,4 +34,14 @@ export async function appendVersion() {
   if (!versionElm) return
 
   versionElm.textContent = `Peapod v${version}`
+}
+
+export async function setMaximizeIcon() {
+  if (await window.__TAURI__.webviewWindow.getCurrentWebviewWindow().isMaximized()) {
+    const topmax = document.querySelector('#topmax') as HTMLDivElement
+    topmax.classList.add('maximized')
+  } else {
+    const topmax = document.querySelector('#topmax') as HTMLDivElement
+    topmax.classList.remove('maximized')
+  }
 }

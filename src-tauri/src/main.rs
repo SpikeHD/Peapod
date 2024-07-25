@@ -23,11 +23,11 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       window::events::close,
       window::events::minimize,
-      window::events::maximize,
-      window::events::unmaximize,
+      window::events::toggle_maximize,
       window::events::disable_decorations,
       window::html::get_topbar,
-      window::html::get_extra_css
+      window::html::get_extra_css,
+      utils::platform::get_platform,
     ])
     .on_window_event(|_window, event| match event {
       tauri::WindowEvent::Resized { .. } => {
