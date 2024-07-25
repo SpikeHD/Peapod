@@ -20,3 +20,5 @@ chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 dirs = "5.0.1"
 include-flate = "0.3.0"
 
+[target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+webkit2gtk = "2.0"
